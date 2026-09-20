@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Get a ticket — zakładka</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚆</text></svg>">
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+  <header>
+    <h1>Get a ticket</h1>
+    <p>Wolne miejsca w PKP Intercity</p>
+  </header>
+
+  <main>
+    <ol>
+      <li>Pokaż pasek zakładek: <kbd>Ctrl</kbd>/<kbd>⌘</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd></li>
+      <li>Przeciągnij na niego: <a id="bookmarklet" class="bookmarklet" href="#">🚆 Get a ticket</a></li>
+      <li>Otwórz <a href="https://ebilet.intercity.pl/" target="_blank" rel="noopener">ebilet.intercity.pl</a> i kliknij zakładkę.</li>
+    </ol>
+    <p class="muted note">Działa tylko na stronie e-IC &middot; nic nie jest rezerwowane ani kupowane.</p>
+    <details>
+      <summary>iPhone / iPad (Safari)</summary>
+      <ol>
+        <li><button type="button" id="copy">Skopiuj kod zakładki</button> <span class="muted" id="copied"></span>
+          <!-- Always visible: if the button fails, the code can still be copied by hand. -->
+          <textarea id="code" rows="5" readonly></textarea>
+          <span class="muted">Nie działa? Przytrzymaj kod → Zaznacz wszystko → Kopiuj.</span></li>
+        <li>Udostępnij → Dodaj zakładkę, nazwa „Get a ticket”.</li>
+        <li>Zakładki → Edycja → „Get a ticket”: wklej kod w polu adresu.</li>
+        <li>Otwórz <a href="https://ebilet.intercity.pl/" target="_blank" rel="noopener">ebilet.intercity.pl</a> i wybierz zakładkę.</li>
+      </ol>
+    </details>
+    <p class="error" id="insecure" hidden>Zakładka zadziała tylko z adresu https:// albo z localhost.</p>
+  </main>
+
+  <script>
+    (function () {
+      var loader = new URL("loader.js", location.href).href;
+      var code = "javascript:(function(){var s=document.createElement('script');s.src='" +
+        loader + "?'+Date.now();document.body.appendChild(s)})()";
+      document.getElementById("bookmarklet").href = code;
+      var box = document.getElementById("code");
+      box.value = code;
+      document.getElementById("copy").addEventListener("click", function () {
+        var say = function (text) { document.getElementById("copied").textContent = text; };
+        // Select first and copy synchronously: iOS Safari often refuses the async clipboard API,
+        // and ignores select() on a read-only field.
+        box.focus();
+        box.setSelectionRange(0, code.length);
+        var copied = false;
+        try { copied = document.execCommand("copy"); } catch (e) {}
+        if (copied) return say("skopiowano");
+        if (!navigator.clipboard) return say("skopiuj zaznaczony kod ręcznie");
+        navigator.clipboard.writeText(code).then(function () { say("skopiowano"); }, function () { say("skopiuj zaznaczony kod ręcznie"); });
+      });
+      var local = ["localhost", "127.0.0.1"].indexOf(location.hostname) !== -1;
+      document.getElementById("insecure").hidden = location.protocol === "https:" || local;
+      document.getElementById("bookmarklet").addEventListener("click", function (evt) {
+        evt.preventDefault();
+        alert("Przeciągnij na pasek zakładek; kliknij dopiero na ebilet.intercity.pl.");
+      });
+    })();
+  </script>
+</body>
+</html>
